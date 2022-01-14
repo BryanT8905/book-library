@@ -1,6 +1,4 @@
 
-
-
 let myLibrary = [];
 
 
@@ -14,6 +12,39 @@ class Book {
 		this.isbn = isbn;
 	}
 	
+}
+
+
+class StoreBooks 
+{
+	static getBooks(){
+		let books;
+		if(localStorage.getItem('books') === null){
+			books = []
+		} else {
+			books = JSON.parse(localStorage.getItem('books'));
+		}
+
+		return books;
+	}
+
+	static addBooks(book){
+		const books = StoreBooks.getBooks();
+		books.push(book);
+		localStorage.setItem('books',JSON.stringify(books));
+		
+	}
+
+	static deleteBooks(isbn){
+		const books = StoreBooks.getBooks();
+		books.forEach((book, index) => {
+			if(book.isbn === isbn) {
+				books.splice(index, 1);
+			}
+		});
+
+		localStorage.setItem('books', JSON.stringify(books));
+	}
 }
 
 class Actions {
@@ -51,16 +82,22 @@ class Actions {
 	static removeItem(e) {
 		if(e.target.classList.contains('btn-danger')){
 			let row = e.target.parentNode.parentNode;
+			let book = e.target.parentElement.previousElementSibling.previousElementSibling.textContent;
+			StoreBooks.deleteBooks(book);
 			document.getElementById('bookList').removeChild(row);
-
 		}
-
 
 	}
 
 	static clearForm(){
 		document.getElementById('addform').reset()
 
+	}
+
+	static displayBooks(){
+		const books = StoreBooks.getBooks();
+
+		books.forEach((book) => Actions.createRow(book));
 	}
 
 	static createRow(book) {
@@ -84,35 +121,28 @@ class Actions {
 		 booksBooks.appendChild(row);
 
 	}	
-
-
 		
 }
 
      
+Actions.displayBooks();
+document.getElementById('addform').addEventListener('submit', (e) => {
 
-     document.getElementById('addform').addEventListener('submit', (e) => {
+	e.preventDefault();
 
-		e.preventDefault();
-
-		let title = document.getElementById('title1').value;
-		let author = document.getElementById('author1').value;
-		let pages = document.getElementById('pages1').value;
-		let ISBN = document.getElementById('isbn1').value;
+	let title = document.getElementById('title1').value;
+	let author = document.getElementById('author1').value;
+	let pages = document.getElementById('pages1').value;
+	let ISBN = document.getElementById('isbn1').value;
 		
-		let mybook = new Book(title,author,pages,ISBN);
-		myLibrary.push(mybook);
-		console.log(myLibrary)
+	let mybook = new Book(title,author,pages,ISBN);
+	myLibrary.push(mybook);
+	
 
-		//for in to iterate over object properties, not for of.  for in gives index
-
-		for(let i in myLibrary){
-			Actions.createRow(myLibrary[i])
-		}
-		
-
-		
-		Actions.clearForm();
+	Actions.createRow(mybook)
+	StoreBooks.addBooks(mybook);		
+	
+	Actions.clearForm();
 		
 })
 
